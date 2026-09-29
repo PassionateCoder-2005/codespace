@@ -18,6 +18,7 @@ server.get("/api/status/readyz", (req, res) => {
   });
 });
 const proxies={}
+const agentProxies={}
 function getProxy(sandboxId){
   const target = `http://sandbox-service-${sandboxId}:80`; // changes
 
@@ -30,7 +31,17 @@ function getProxy(sandboxId){
     }
     return proxies[sandboxId];
 }
-
+function getAgentProxy(sandboxId){
+  const target = `http://sandbox-service-${sandboxId}:3000`;
+   // changes
+   if(!agentProxies[sandboxId]){
+    agentProxies[sandboxId] = createProxyMiddleware({
+        target,
+        changeOrigin: true,
+        ws: true,
+    });
+    return agentProxies[sandboxId];}
+}
 server.use((req, res, next) => {
   const host = req.headers.host;
 
@@ -41,9 +52,13 @@ server.use((req, res, next) => {
   }
 
   const sandboxId = host.split(".")[0];
-
-
+   if(host.split(".")[1]!=="agent"){
+   }
+   else if(host.split(".")[1]==="preview"){
  return getProxy(sandboxId)(req, res, next);
+
+   }
+
 });
 
 export default server;

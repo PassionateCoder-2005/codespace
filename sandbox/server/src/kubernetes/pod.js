@@ -12,6 +12,12 @@ export const createPod = async (sandboxId) => {
       }
     },
     spec: {
+      volumes: [
+        {
+          name: "workspace-volume", // create a volume named "workspace_volume" in the pod spec
+          emptyDir: {} // this volume will be an empty directory that can be used by the containers in the pod 
+        }
+      ],
       containers: [
         {
           image: "template",
@@ -29,8 +35,37 @@ export const createPod = async (sandboxId) => {
               cpu: "250m",
               memory: "500Mi"
             }
-          }
-        }
+          },
+          volumeMounts: [
+            {
+              name: "workspace-volume", // mount the "workspace_volume" to the container at /workspace
+              mountPath: "/workspace" // sync the volume with the container's filesystem at /workspace
+            }
+          ]
+
+        },
+        {
+          image:"agent",
+          imagePullPolicy: "IfNotPresent",
+          name: "agent-container",
+          ports:[{containerPort:3000,name:"http"}],
+          resources: {
+            limits: {
+              cpu: "500m",
+              memory: "1Gi"
+            },
+            requests: {
+              cpu: "250m",
+              memory: "500Mi"
+            }
+          },
+          volumeMounts: [
+            {
+              name: "workspace-volume", // mount the "workspace_volume" to the container at /workspace
+              mountPath: "/workspace" // sync the volume with the container's filesystem at /workspace
+            }
+          ]
+        } // this is the agent container that will be created in the pod spec
       ]
     }
   };
