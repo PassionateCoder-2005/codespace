@@ -33,14 +33,16 @@ function getProxy(sandboxId){
 }
 function getAgentProxy(sandboxId){
   const target = `http://sandbox-service-${sandboxId}:3000`;
-   // changes
-   if(!agentProxies[sandboxId]){
+
+  if(!agentProxies[sandboxId]){
     agentProxies[sandboxId] = createProxyMiddleware({
-        target,
-        changeOrigin: true,
-        ws: true,
+      target,
+      changeOrigin: true,
+      ws: true,
     });
-    return agentProxies[sandboxId];}
+  }
+
+  return agentProxies[sandboxId];
 }
 server.use((req, res, next) => {
   const host = req.headers.host;
@@ -51,15 +53,21 @@ server.use((req, res, next) => {
     });
   }
 
-  const sandboxId = host.split(".")[0];
-   if(host.split(".")[1]!=="agent"){
-      return getAgentProxy(sandboxId)(req, res, next);
-   }
-   else if(host.split(".")[1]==="preview"){
- return getProxy(sandboxId)(req, res, next);
+  const parts = host.split(".");
+  const sandboxId = parts[0];
+  const type = parts[1];
 
-   }
+  if (type === "agent") {
+    return getAgentProxy(sandboxId)(req, res, next);
+  }
 
+  if (type === "preview") {
+    return getProxy(sandboxId)(req, res, next);
+  }
+
+  return res.status(404).json({
+    message: "Invalid sandbox host",
+  });
 });
 
 export default server;

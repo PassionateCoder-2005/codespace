@@ -18,9 +18,9 @@ export const createPod = async (sandboxId) => {
           emptyDir: {} // this volume will be an empty directory that can be used by the containers in the pod 
         }
       ],
-      initContainers: [
+  initContainers: [
   {
-    image: "init-container",
+    image: "template:latest",
     name: "template",
     imagePullPolicy: "IfNotPresent",
     command: ["sh", "-c", "cp -r /workspace/. /seed/"],
